@@ -1,5 +1,5 @@
 import type { Mat4 } from '@/lib/spatial-reconstruction/types'
-import { relativePose } from '@/lib/volume-engine/core/TransformValidation'
+import { relativePose, validateMat4 } from '@/lib/volume-engine/core/TransformValidation'
 import { DEFAULT_FREEHAND_CONFIG, type Freehand3DConfig } from '@/lib/volume-engine/config/Freehand3DConfig'
 import type { VolumeErrorCode } from '@/lib/volume-engine/errors'
 import { VolumeEngineError } from '@/lib/volume-engine/errors'
@@ -130,11 +130,26 @@ export async function reconstructFreehand(
     maxUncertaintyMm: 25,
   }
   const posed = frames.every((frame) => frame.transform)
+  const poseStarted = Date.now()
+  const lowQuality = (frame: FreehandFrame) => (frame.quality ?? 1) < config.minImageQuality
   try {
     if (posed) {
       const kept: { matrix: Mat4; confidence: number; uncertaintyMm: number | null }[] = []
       for (const frame of frames) {
         if (!frame.transform) continue
+        if (lowQuality(frame)) {
+          findings.push({ code: 'IMAGE_QUALITY_LOW', message: 'Кадр не принят: низкое качество изображения.' })
+          rejected += 1
+          continue
+        }
+        try {
+          validateMat4(frame.transform)
+        } catch (error) {
+          if (!(error instanceof VolumeEngineError)) throw error
+          findings.push({ code: error.code, message: error.message })
+          rejected += 1
+          continue
+        }
         const confidence = frame.confidence ?? 1
         const previous = kept[kept.length - 1]
         if (previous && provider.mode !== 'reference') {
@@ -157,11 +172,19 @@ export async function reconstructFreehand(
     } else {
       const first = frames[0]
       if (!first) return failed(source, poseMode, 'INSUFFICIENT_COVERAGE', findings, provider, frames.length, 0)
+      if (lowQuality(first)) {
+        return failed(source, poseMode, 'IMAGE_QUALITY_LOW', [...findings, { code: 'IMAGE_QUALITY_LOW', message: 'Первый кадр слишком низкого качества.' }], provider, frames.length, frames.length)
+      }
       let last = first
       let lastPoint = originTrajectory()
       accepted.push(sliceOf(first, lastPoint.matrix, 1))
       trajectory.push(lastPoint)
       for (const frame of frames.slice(1)) {
+        if (lowQuality(frame)) {
+          findings.push({ code: 'IMAGE_QUALITY_LOW', message: 'Кадр не принят: низкое качество изображения.' })
+          rejected += 1
+          continue
+        }
         const estimate = await provider.estimate(planeOf(last), planeOf(frame))
         const poseFindings = inspectPose(estimate, limits)
         if (poseFindings.length > 0) {
@@ -195,9 +218,17 @@ export async function reconstructFreehand(
       measuresAllowed: false,
     }
   }
+  const poseMs = Date.now() - poseStarted
   let volume: ReconstructedVolume
+  let samplingMs = 0
+  let allocationMs = 0
+  let splattingMs = 0
   try {
-    volume = reconstructSlices(accepted, config, poseMode, source)
+    const built = reconstructSlices(accepted, config, poseMode, source)
+    volume = built.volume
+    samplingMs = built.samplingMs
+    allocationMs = built.allocationMs
+    splattingMs = built.splattingMs
   } catch (error) {
     if (error instanceof VolumeEngineError) {
       return failed(source, poseMode, error.code, [...findings, { code: error.code, message: error.message }], provider, frames.length, rejected)
@@ -221,6 +252,10 @@ export async function reconstructFreehand(
       volume,
       trajectoryLengthMm,
       reconstructionMs: Date.now() - started,
+      samplingMs,
+      poseMs,
+      splattingMs,
+      allocationMs,
     }),
     error: volume.status === 'unavailable' ? 'INSUFFICIENT_COVERAGE' : null,
     measuresAllowed: physicalMeasuresAllowed(volume),

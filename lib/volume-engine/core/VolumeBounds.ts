@@ -1,4 +1,5 @@
 import type { Vec3 } from '@/lib/spatial-reconstruction/types'
+import { VolumeEngineError } from '@/lib/volume-engine/errors'
 
 export interface VolumeBounds {
   min: Vec3
@@ -24,10 +25,12 @@ export function boundsOf(points: readonly Vec3[]): VolumeBounds | null {
   return { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] }
 }
 
-export function gridSize(bounds: VolumeBounds, voxelMm: number): [number, number, number] {
-  return [
-    Math.floor((bounds.max[0] - bounds.min[0]) / voxelMm) + 1,
-    Math.floor((bounds.max[1] - bounds.min[1]) / voxelMm) + 1,
-    Math.floor((bounds.max[2] - bounds.min[2]) / voxelMm) + 1,
-  ]
+export function gridSize(bounds: VolumeBounds, spacingMm: Vec3): [number, number, number] {
+  return [0, 1, 2].map((axis) => {
+    const step = spacingMm[axis]
+    if (step == null || !Number.isFinite(step) || step <= 0) {
+      throw new VolumeEngineError('INVALID_VOXEL_SIZE', 'шаг вокселя: ожидается число больше нуля, мм')
+    }
+    return Math.floor((bounds.max[axis] - bounds.min[axis]) / step) + 1
+  }) as [number, number, number]
 }

@@ -1,5 +1,7 @@
+import type { Vec3 } from '@/lib/spatial-reconstruction/types'
+
 export interface VolumeResolutionConfig {
-  voxelSizeMm: number
+  voxelSizeMm: Vec3
   maxVoxels: number
   maxMemoryMB: number
 }
@@ -14,6 +16,15 @@ export interface Freehand3DConfig {
   maxMemoryMB: number
   maxStepMm: number
   maxRotationRad: number
+  /** Если задан, оси вокселя независимы. Иначе все три равны voxelSizeMm. */
+  voxelSize?: Vec3
+  kernelRadius: number
+  kernelSigmaMm: number
+  minImageQuality: number
+  pixelStride: 1 | 2 | 4
+  maxSamplesPerFrame: number
+  /** Явное разрешение использовать 2D-регистрацию, если learned-модель не подключена. */
+  allowRegistrationFallback: boolean
   enableInterpolation: boolean
   enableConfidenceVolume: boolean
   enableCoverageMap: boolean
@@ -30,15 +41,26 @@ export const DEFAULT_FREEHAND_CONFIG: Freehand3DConfig = {
   maxMemoryMB: 32,
   maxStepMm: 40,
   maxRotationRad: Math.PI / 2,
+  kernelRadius: 1,
+  kernelSigmaMm: 1,
+  minImageQuality: 0.15,
+  pixelStride: 1,
+  maxSamplesPerFrame: 250_000,
+  allowRegistrationFallback: false,
   enableInterpolation: false,
   enableConfidenceVolume: true,
   enableCoverageMap: true,
   enablePhysicalMeasurements: false,
 }
 
+export function voxelSpacing(config: Freehand3DConfig): Vec3 {
+  if (config.voxelSize) return config.voxelSize
+  return [config.voxelSizeMm, config.voxelSizeMm, config.voxelSizeMm]
+}
+
 export function resolutionOf(config: Freehand3DConfig): VolumeResolutionConfig {
   return {
-    voxelSizeMm: config.voxelSizeMm,
+    voxelSizeMm: voxelSpacing(config),
     maxVoxels: config.maxVoxels,
     maxMemoryMB: config.maxMemoryMB,
   }

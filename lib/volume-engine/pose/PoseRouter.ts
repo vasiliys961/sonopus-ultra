@@ -19,6 +19,7 @@ export function createPoseProvider(config: Freehand3DConfig, deps: PoseRouterDep
   if (config.poseProvider === 'registration') return new RegistrationPoseProvider()
   if (config.poseProvider === 'sensor') return new SensorPoseProvider(deps.sensor ?? null)
   const modelId = config.learnedModel ?? 'custom-sonopus-pose-v1'
+  if (!deps.learnedSession && config.allowRegistrationFallback) return new RegistrationPoseProvider()
   const descriptor = poseModelById(modelId)
   if (!descriptor) throw new VolumeEngineError('UNSUPPORTED_MODEL', 'Модель позы не найдена в реестре.')
   if (descriptor.provider === 'tus-rec') return new TUSRecPoseProvider(descriptor, deps.learnedSession ?? null)

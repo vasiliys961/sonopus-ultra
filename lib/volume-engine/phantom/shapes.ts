@@ -33,10 +33,10 @@ function paintFrame(
   }
 }
 
-/** Две точки на z = 0 и z = 2 мм. Промежуток должен остаться unknown. */
+/** Две точки на z = 0 и z = 5 мм. Ядро радиуса 1 мм не должно закрасить середину. */
 export function gapFrames(): FreehandFrame[] {
   const dot = (u: number, v: number) => (u === 2 && v === 2 ? 1 : -1)
-  return [paintFrame(4, dot, 0, 0), paintFrame(4, dot, 2, 1)]
+  return [paintFrame(4, dot, 0, 0), paintFrame(4, dot, 5, 1)]
 }
 
 /** Квадрат 8×8 пикселей на пяти плоскостях. Тестовая геометрия, не пациент. */

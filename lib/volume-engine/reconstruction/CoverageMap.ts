@@ -1,3 +1,11 @@
+export type ObservationClass = 'observed' | 'weak' | 'interpolated' | 'unknown'
+
+export function observationClass(observed: number, interpolated: number, coverage: number): ObservationClass {
+  if (observed === 1) return coverage >= 0.35 ? 'observed' : 'weak'
+  if (interpolated === 1) return 'interpolated'
+  return 'unknown'
+}
+
 export function coverageRatio(observed: Uint8Array): number {
   if (observed.length === 0) return 0
   let seen = 0

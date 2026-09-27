@@ -14,6 +14,12 @@ export interface ReconstructionTelemetry {
   coverage: number
   reconstruction_time: number
   render_time: number
+  samplingMs: number
+  poseMs: number
+  splattingMs: number
+  allocationMs: number
+  renderingMs: number
+  totalMs: number
 }
 
 export function buildTelemetry(input: {
@@ -25,6 +31,10 @@ export function buildTelemetry(input: {
   trajectoryLengthMm: number
   reconstructionMs: number
   renderMs?: number
+  samplingMs?: number
+  poseMs?: number
+  splattingMs?: number
+  allocationMs?: number
 }): ReconstructionTelemetry {
   let confidenceSum = 0
   let confidenceCount = 0
@@ -45,6 +55,12 @@ export function buildTelemetry(input: {
     coverage: coverageRatio(input.volume.observed),
     reconstruction_time: input.reconstructionMs,
     render_time: input.renderMs ?? 0,
+    samplingMs: input.samplingMs ?? 0,
+    poseMs: input.poseMs ?? 0,
+    splattingMs: input.splattingMs ?? 0,
+    allocationMs: input.allocationMs ?? 0,
+    renderingMs: input.renderMs ?? 0,
+    totalMs: input.reconstructionMs,
   }
 }
 

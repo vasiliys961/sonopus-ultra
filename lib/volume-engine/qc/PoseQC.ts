@@ -19,14 +19,19 @@ function lengthOf(vector: readonly number[]): number {
 
 export function inspectPose(estimate: PoseEstimate, limits: PoseQcLimits): PoseQcFinding[] {
   const findings: PoseQcFinding[] = []
+  const translationAxes = estimate.translationAxes ?? ['known', 'known', 'known']
+  const rotationAxes = estimate.rotationAxes ?? ['known', 'known', 'known']
+  const translation = estimate.translationMm.map((value, index) => (translationAxes[index] === 'unknown' ? 0 : value))
   if (estimate.confidence < limits.minConfidence) {
     findings.push({ code: 'POSE_LOW_CONFIDENCE', message: 'Low pose confidence' })
   }
-  if (lengthOf(estimate.translationMm) > limits.maxStepMm) {
+  if (lengthOf(translation) > limits.maxStepMm) {
     findings.push({ code: 'POSE_JUMP', message: 'Pose jump detected' })
+    findings.push({ code: 'STEP_TOO_LARGE', message: 'Шаг траектории больше допустимого.' })
   }
-  if (estimate.rotationRad.some((angle) => Math.abs(angle) > limits.maxRotationRad)) {
+  if (estimate.rotationRad.some((angle, index) => rotationAxes[index] !== 'unknown' && Math.abs(angle) > limits.maxRotationRad)) {
     findings.push({ code: 'POSE_JUMP', message: 'Trajectory unstable' })
+    findings.push({ code: 'ROTATION_TOO_LARGE', message: 'Поворот кадра больше допустимого.' })
   }
   return findings
 }

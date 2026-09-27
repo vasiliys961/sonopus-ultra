@@ -93,11 +93,13 @@ describe('volume engine', () => {
     const turned = await reconstructFreehand([rotatedFrame()], new ReferencePoseProvider([]))
     let bestX = 0
     let bestY = 0
+    let bestScalar = -1
     for (let iz = 0; iz < turned.volume.size[2]; iz += 1) {
       for (let iy = 0; iy < turned.volume.size[1]; iy += 1) {
         for (let ix = 0; ix < turned.volume.size[0]; ix += 1) {
           const cell = voxelIndex(turned.volume.size, ix, iy, iz)
-          if (turned.volume.observed[cell] !== 1) continue
+          if ((turned.volume.scalars[cell] ?? 0) <= bestScalar) continue
+          bestScalar = turned.volume.scalars[cell] ?? 0
           bestX = turned.volume.originMm[0] + ix * turned.volume.spacingMm[0]
           bestY = turned.volume.originMm[1] + iy * turned.volume.spacingMm[1]
         }
@@ -206,7 +208,7 @@ describe('volume engine', () => {
       columns: 1,
       pixels: Float32Array.from([0.4]),
     })
-    const volume = reconstructSlices([slice], DEFAULT_FREEHAND_CONFIG, 'reference_test', 'dicom-ct')
+    const volume = reconstructSlices([slice], DEFAULT_FREEHAND_CONFIG, 'reference_test', 'dicom-ct').volume
     expect(volume.source).toBe('dicom-ct')
     expect(volume.originMm[2]).toBeCloseTo(5)
     expect(orthogonalSlice(volume, 'z', 0).rgba.some((value) => value > 0)).toBe(true)

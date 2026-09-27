@@ -19,5 +19,12 @@ export class ReferencePoseProvider implements PoseProvider {
 }
 
 export function referenceStep(translationMm: Vec3, rotationRad: Vec3 = [0, 0, 0]): PoseEstimate {
-  return { translationMm, rotationRad, confidence: 1 }
+    return {
+      translationMm,
+      rotationRad,
+      confidence: 1,
+      translationAxes: ['known', 'known', 'known'],
+      rotationAxes: ['known', 'known', 'known'],
+      method: 'reference',
+    }
 }

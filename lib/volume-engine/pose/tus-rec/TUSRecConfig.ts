@@ -23,3 +23,12 @@ export function inspectTusRec(descriptor: PoseModelDescriptor): TusRecInspection
 export function tusRecChecklist(): readonly string[] {
   return REQUIRED
 }
+
+export type TusRecReadiness = 'NOT CONNECTED' | 'ADAPTER READY' | 'MODEL CONNECTED' | 'MODEL BENCHMARKED'
+
+/** Без checkpoint статус не поднимается выше отсутствия модели. Прогон весов здесь не подменяется. */
+export function tusRecReadiness(descriptor: PoseModelDescriptor, sessionConnected: boolean): TusRecReadiness {
+  const inspection = inspectTusRec(descriptor)
+  if (!inspection.usable || !sessionConnected) return 'NOT CONNECTED'
+  return 'MODEL CONNECTED'
+}

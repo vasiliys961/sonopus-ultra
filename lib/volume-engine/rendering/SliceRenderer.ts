@@ -2,6 +2,7 @@ import { voxelIndex } from '@/lib/volume-engine/core/VolumeBuilder'
 import type { ReconstructedVolume } from '@/lib/volume-engine/types/VolumeTypes'
 
 export type SliceAxis = 'x' | 'y' | 'z'
+export type SliceView = 'observed' | 'coverage' | 'with-interpolated'
 
 export interface OrthogonalSlice {
   axis: SliceAxis
@@ -11,13 +12,25 @@ export interface OrthogonalSlice {
   rgba: Uint8ClampedArray
 }
 
-function toneOf(volume: ReconstructedVolume, index: number): number | null {
-  if (volume.observed[index] === 1) return volume.scalars[index] ?? 0
-  return null
+function toneOf(volume: ReconstructedVolume, index: number, view: SliceView): [number, number, number] | null {
+  const observed = volume.observed[index] === 1
+  const interpolated = volume.interpolated[index] === 1
+  if (view === 'coverage') {
+    if (!observed) return null
+    const cover = Math.max(0, Math.min(1, volume.coverage[index] ?? 0))
+    return [40, Math.round(80 + cover * 150), 120]
+  }
+  if (view === 'with-interpolated' && interpolated && !observed) {
+    const tone = Math.max(0, Math.min(255, Math.round((volume.scalars[index] ?? 0) * 255)))
+    return [tone, tone, Math.round(tone * 0.45)]
+  }
+  if (!observed) return null
+  const tone = Math.max(0, Math.min(255, Math.round((volume.scalars[index] ?? 0) * 255)))
+  return [tone, tone, tone]
 }
 
-/** Срез только по увиденным вокселям. Unknown остаётся прозрачным. */
-export function orthogonalSlice(volume: ReconstructedVolume, axis: SliceAxis, index: number): OrthogonalSlice {
+/** Unknown остаётся прозрачным. Интерполяция рисуется только в режиме with-interpolated. */
+export function orthogonalSlice(volume: ReconstructedVolume, axis: SliceAxis, index: number, view: SliceView = 'observed'): OrthogonalSlice {
   const [sx, sy, sz] = volume.size
   const width = axis === 'x' ? sy : sx
   const height = axis === 'z' ? sy : sz
@@ -28,13 +41,12 @@ export function orthogonalSlice(volume: ReconstructedVolume, axis: SliceAxis, in
       const y = axis === 'x' ? col : axis === 'y' ? index : col
       const z = axis === 'z' ? index : row
       if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) continue
-      const toneValue = toneOf(volume, voxelIndex(volume.size, x, y, z))
-      if (toneValue == null) continue
-      const tone = Math.max(0, Math.min(255, Math.round(toneValue * 255)))
+      const tone = toneOf(volume, voxelIndex(volume.size, x, y, z), view)
+      if (!tone) continue
       const pixel = (row * width + col) * 4
-      rgba[pixel] = tone
-      rgba[pixel + 1] = tone
-      rgba[pixel + 2] = tone
+      rgba[pixel] = tone[0]
+      rgba[pixel + 1] = tone[1]
+      rgba[pixel + 2] = tone[2]
       rgba[pixel + 3] = 255
     }
   }

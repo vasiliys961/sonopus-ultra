@@ -14,7 +14,14 @@ export function readSixDof(values: ArrayLike<number>): PoseEstimate {
   }
   const translationMm: Vec3 = [numbers[0] ?? 0, numbers[1] ?? 0, numbers[2] ?? 0]
   const rotationRad: Vec3 = [numbers[3] ?? 0, numbers[4] ?? 0, numbers[5] ?? 0]
-  return { translationMm, rotationRad, confidence: 1 }
+  return {
+    translationMm,
+    rotationRad,
+    confidence: 1,
+    translationAxes: ['known', 'known', 'known'],
+    rotationAxes: ['known', 'known', 'known'],
+    method: 'learned-6dof',
+  }
 }
 
 /** Адаптер learned-позы. Без сессии смещение не подставляется. */
