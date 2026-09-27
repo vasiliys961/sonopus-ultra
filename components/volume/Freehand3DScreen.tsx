@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { LanguageSwitch, useLocale } from '@/components/LocaleProvider'
 import { loadExperimentalDesk, type ExperimentalDesk } from '@/lib/volume-engine/demo'
-import type { OrthogonalSlice } from '@/lib/volume-engine/rendering/SliceRenderer'
+import { middleObservedIndex, orthogonalSlice, type OrthogonalSlice, type SliceView } from '@/lib/volume-engine/rendering/SliceRenderer'
 import type { VolumeBuildResult } from '@/lib/volume-engine/core/VolumeEngine'
 import { coverageRatio } from '@/lib/volume-engine/reconstruction/CoverageMap'
 
@@ -52,6 +52,7 @@ export function Freehand3DScreen() {
   const { locale } = useLocale()
   const ru = locale === 'ru'
   const [desk, setDesk] = useState<ExperimentalDesk | null>(null)
+  const [view, setView] = useState<SliceView>('observed')
   useEffect(() => {
     void loadExperimentalDesk().then(setDesk)
   }, [])
@@ -84,20 +85,28 @@ export function Freehand3DScreen() {
               <div><strong>{reference.telemetry.trajectory_length.toFixed(0)} mm</strong><span>{ru ? 'Траектория' : 'Trajectory'}</span></div>
               <div><strong>{percent(reference.volume)}%</strong><span>{ru ? 'Покрытие' : 'Coverage'}</span></div>
             </div>
-            <p className="hint">{ru ? 'Статус объёма' : 'Volume status'}: {reference.volume.status}</p>
+            <p className="banner ok">REFERENCE VALIDATED. Clinical validation: NO.</p>
+            <div className="actions">
+              <button type="button" onClick={() => setView('observed')}>{ru ? 'Только наблюдения' : 'Observed only'}</button>
+              <button type="button" onClick={() => setView('coverage')}>{ru ? 'Покрытие' : 'Coverage'}</button>
+            </div>
             <TrajectorySketch points={desk.referenceView.trajectory} />
             <div className="freehand-slices">
-              <figure><SliceCanvas slice={desk.referenceView.axial} /><figcaption>{ru ? 'Аксиальный' : 'Axial'}</figcaption></figure>
-              <figure><SliceCanvas slice={desk.referenceView.coronal} /><figcaption>{ru ? 'Корональный' : 'Coronal'}</figcaption></figure>
-              <figure><SliceCanvas slice={desk.referenceView.sagittal} /><figcaption>{ru ? 'Сагиттальный' : 'Sagittal'}</figcaption></figure>
+              {(['z', 'y', 'x'] as const).map((axis, index) => (
+                <figure key={axis}>
+                  <SliceCanvas slice={orthogonalSlice(reference.volume, axis, middleObservedIndex(reference.volume, axis), view)} />
+                  <figcaption>{[ru ? 'Аксиальный' : 'Axial', ru ? 'Корональный' : 'Coronal', ru ? 'Сагиттальный' : 'Sagittal'][index]}</figcaption>
+                </figure>
+              ))}
             </div>
           </>
         ) : <p className="hint">{ru ? 'Собирается тестовый объём.' : 'Building the test volume.'}</p>}
       </section>
       <section className="panel freehand">
         <h2>{ru ? 'Регистрация соседних кадров' : 'Neighbor-frame registration'}</h2>
-        <p className="banner warn">EXPERIMENTAL RECONSTRUCTION. Spatial geometry is estimated. Physical measurements are not clinically validated.</p>
-        <p>{ru ? 'Пространственная геометрия оценена. Физические измерения клинически не подтверждены.' : 'Spatial geometry is estimated. Physical measurements are not clinically validated.'}</p>
+        <p className="banner warn">EXPERIMENTAL ESTIMATED. Physical measurements: DISABLED. Clinical validation: NO.</p>
+        <p>POSE: 2D REGISTRATION. OUT-OF-PLANE: NOT ESTIMATED.</p>
+        <p>{ru ? 'Вне плоскости движение не оценено. Ноль по этой оси — не измерение.' : 'Out-of-plane motion is not estimated. Zero on that axis is not a measurement.'}</p>
         {registration ? (
           <div className="metrics freehand-metrics">
             <div><strong>{registration.telemetry.frame_count}</strong><span>{ru ? 'Кадры' : 'Frames'}</span></div>
@@ -113,7 +122,8 @@ export function Freehand3DScreen() {
       </section>
       <section className="panel freehand">
         <h2>TUS-REC</h2>
-        <p className="banner warn">{ru ? 'Модель не подключена. Объём из неё не строится.' : 'The model is not connected. No volume is built from it.'}</p>
+        <p className="banner warn">LEARNED POSE: MODEL NOT CONNECTED</p>
+        <p>{ru ? 'Модель не подключена. Объём из неё не строится.' : 'The model is not connected. No volume is built from it.'}</p>
         <p className="hint">{desk ? desk.tusRec.missing.join(', ') : 'checkpoint'}</p>
       </section>
     </main>
