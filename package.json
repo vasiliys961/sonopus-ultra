@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "tsc --noEmit --incremental false"
   },
   "dependencies": {
     "dicom-parser": "^1.8.21",

@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import { Freehand3DScreen } from '@/components/volume/Freehand3DScreen'
 
 export default function FreehandPage() {
-  redirect('/')
+  return <Freehand3DScreen />
 }

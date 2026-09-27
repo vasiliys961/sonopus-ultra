@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { LanguageSwitch, useLocale } from '@/components/LocaleProvider'
 import { dictationLine } from '@/lib/ultra/dictation'
@@ -439,7 +440,10 @@ export function UltraScreen() {
           <p className="brand" aria-label="SonOpus ultra">Son<span className="brand-opus">Opus</span><span className="brand-mark">ultra</span></p>
           <h1>{copy.lead}</h1>
         </div>
-        <LanguageSwitch />
+        <div className="top-tools">
+          <LanguageSwitch />
+          <Link href="/freehand">Freehand 3D</Link>
+        </div>
       </header>
       <ol className="ultra-steps">
         {copy.steps.map((name, index) => (
