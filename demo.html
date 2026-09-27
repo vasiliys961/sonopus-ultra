@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Sono — проверка Quality Gate</title>
+  <style>
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background: #07110e; color: #e8f6f1; }
+    main { width: min(760px, calc(100% - 32px)); margin: 24px auto; }
+    canvas { width: 100%; background: #000; border-radius: 12px; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+    label { display: grid; gap: 4px; color: #8eaea3; font-size: 13px; }
+    strong { font-size: 22px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Quality Gate без сборки</h1>
+    <p>Та же схема, что в приложении: резкость, яркость, стабильность, заполнение. Подсказка только техническая.</p>
+    <canvas id="view" width="320" height="240"></canvas>
+    <div class="row">
+      <label>Смаз<input id="blur" type="range" min="0" max="6" value="0" /></label>
+      <label>Яркость<input id="gain" type="range" min="0.2" max="1.8" step="0.1" value="1" /></label>
+      <label>Сдвиг<input id="shift" type="range" min="0" max="24" value="0" /></label>
+    </div>
+    <div class="row">
+      <div><strong id="q">—</strong><div>качество</div></div>
+      <div><strong id="s">—</strong><div>резкость</div></div>
+      <div><strong id="b">—</strong><div>яркость</div></div>
+      <div><strong id="st">—</strong><div>стабильность</div></div>
+      <div><strong id="c">—</strong><div>заполнение</div></div>
+    </div>
+    <p id="hint"></p>
+  </main>
+  <script>
+    const canvas = document.getElementById('view')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    let prev = null
+    const weights = { sharpness: 0.35, brightness: 0.25, stability: 0.25, coverage: 0.15 }
+    const clamp = (v) => Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0))
+    function grayOf(image) {
+      const gray = new Float32Array(canvas.width * canvas.height)
+      for (let i = 0; i < gray.length; i += 1) {
+        const p = i * 4
+        gray[i] = (0.299 * image.data[p] + 0.587 * image.data[p + 1] + 0.114 * image.data[p + 2]) / 255
+      }
+      return gray
+    }
+    function boxBlur(gray, w, h) {
+      const out = new Float32Array(gray.length)
+      for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) {
+        let sum = 0, n = 0
+        for (let dy = -1; dy <= 1; dy += 1) for (let dx = -1; dx <= 1; dx += 1) {
+          const yy = y + dy, xx = x + dx
+          if (yy < 0 || xx < 0 || yy >= h || xx >= w) continue
+          sum += gray[yy * w + xx]; n += 1
+        }
+        out[y * w + x] = sum / n
+      }
+      return out
+    }
+    function score(gray, prevGray, w, h) {
+      let sum = 0, sumSq = 0, count = 0
+      for (let y = 1; y < h - 1; y += 1) for (let x = 1; x < w - 1; x += 1) {
+        const i = y * w + x
+        const lap = gray[i - w] + gray[i + w] + gray[i - 1] + gray[i + 1] - 4 * gray[i]
+        sum += lap; sumSq += lap * lap; count += 1
+      }
+      const mean = sum / count
+      const sharpness = clamp((sumSq / count - mean * mean) / 0.02)
+      let tissueSum = 0, tissueN = 0, high = 0, filled = 0
+      for (let i = 0; i < gray.length; i += 1) {
+        const v = gray[i]
+        if (v > 0.96) high += 1
+        if (v >= 0.04) { tissueSum += v; tissueN += 1 }
+        if (v >= 0.06 && v <= 0.98) filled += 1
+      }
+      let brightness = 0
+      if (tissueN >= gray.length * 0.05) {
+        const tissueMean = tissueSum / tissueN
+        let exposure = 1
+        if (tissueMean < 0.18) exposure = tissueMean / 0.18
+        else if (tissueMean > 0.82) exposure = Math.max(0, (1 - tissueMean) / 0.18)
+        brightness = clamp(exposure * 0.75 + (1 - Math.min(1, high / gray.length / 0.08)) * 0.25)
+      }
+      let stability = 1
+      if (prevGray && prevGray.length === gray.length) {
+        let diff = 0
+        for (let i = 0; i < gray.length; i += 1) diff += Math.abs(gray[i] - prevGray[i])
+        stability = clamp(1 - diff / gray.length / 0.12)
+      }
+      const coverage = filled / gray.length
+      const qualityScore = clamp(sharpness * weights.sharpness + brightness * weights.brightness + stability * weights.stability + coverage * weights.coverage)
+      return { sharpness, brightness, stability, coverage, qualityScore }
+    }
+    function frame() {
+      const w = canvas.width, h = canvas.height
+      const blur = Number(document.getElementById('blur').value)
+      const gain = Number(document.getElementById('gain').value)
+      const shift = Number(document.getElementById('shift').value)
+      let gray = new Float32Array(w * h)
+      const cx = w / 2 + shift, cy = h * 0.12, radius = Math.min(w, h) * 0.92
+      for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) {
+        const dx = x - cx, dy = y - cy
+        if (y < cy || Math.hypot(dx, dy) > radius) continue
+        const ex = (x - w / 2) / (w * 0.16), ey = (y - h * 0.58) / (h * 0.14)
+        const ellipse = ex * ex + ey * ey
+        let value = 0.28
+        if ((x + y) % 2 === 0) value += 0.45
+        if (ellipse < 1) value = 0.05
+        else if (ellipse < 1.35) value = 0.95
+        gray[y * w + x] = Math.max(0, Math.min(1, value * gain))
+      }
+      for (let pass = 0; pass < blur; pass += 1) gray = boxBlur(gray, w, h)
+      const image = ctx.createImageData(w, h)
+      for (let i = 0; i < gray.length; i += 1) {
+        const v = Math.round(gray[i] * 255)
+        image.data[i * 4] = v; image.data[i * 4 + 1] = v; image.data[i * 4 + 2] = v; image.data[i * 4 + 3] = 255
+      }
+      ctx.putImageData(image, 0, 0)
+      const result = score(gray, prev, w, h)
+      prev = gray
+      document.getElementById('q').textContent = result.qualityScore.toFixed(2)
+      document.getElementById('s').textContent = result.sharpness.toFixed(2)
+      document.getElementById('b').textContent = result.brightness.toFixed(2)
+      document.getElementById('st').textContent = result.stability.toFixed(2)
+      document.getElementById('c').textContent = result.coverage.toFixed(2)
+      const parts = [
+        ['Кадр нерезкий.', result.sharpness],
+        ['Кадр слишком тёмный или пересвечен.', result.brightness],
+        ['Слишком резкое движение.', result.stability],
+        ['Полезный сигнал занимает слишком малую часть кадра.', result.coverage],
+      ].sort((a, b) => a[1] - b[1])
+      document.getElementById('hint').textContent = result.qualityScore >= 0.75 ? 'Порог 0.75 удерживается.' : parts[0][0]
+      requestAnimationFrame(frame)
+    }
+    frame()
+  </script>
+</body>
+</html>
