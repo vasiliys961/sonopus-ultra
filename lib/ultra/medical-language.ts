@@ -160,16 +160,16 @@ function takeSpoken(tokens: string[], index: number): { value: number; next: num
   }
   const mid = tokens[index + used] ? coreOf(tokens[index + used]) : null
   const midValue = mid ? NUMBER_WORDS[mid.core] : undefined
-  if (midValue != null && midValue >= 10 && midValue < 20) {
+  if (mid && midValue != null && midValue >= 10 && midValue < 20) {
     return { value: value + midValue, next: index + used + 1, suffix: mid.suffix }
   }
-  if (midValue != null && midValue >= 20 && midValue < 100 && midValue % 10 === 0) {
+  if (mid && midValue != null && midValue >= 20 && midValue < 100 && midValue % 10 === 0) {
     value += midValue
     used += 1
     suffix = mid.suffix
     const unit = tokens[index + used] ? coreOf(tokens[index + used]) : null
     const unitValue = unit ? NUMBER_WORDS[unit.core] : undefined
-    if (unitValue != null && unitValue >= 1 && unitValue <= 9) {
+    if (unit && unitValue != null && unitValue >= 1 && unitValue <= 9) {
       value += unitValue
       used += 1
       suffix = unit.suffix
@@ -178,7 +178,7 @@ function takeSpoken(tokens: string[], index: number): { value: number; next: num
   }
   const small = tokens[index + used] ? coreOf(tokens[index + used]) : null
   const smallValue = small ? NUMBER_WORDS[small.core] : undefined
-  if (smallValue != null && smallValue >= 0 && smallValue <= 9) {
+  if (small && smallValue != null && smallValue >= 0 && smallValue <= 9) {
     return { value: value + smallValue, next: index + used + 1, suffix: small.suffix }
   }
   if (used > 0) return { value, next: index + used, suffix }
