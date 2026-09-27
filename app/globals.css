@@ -49,6 +49,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .freehand-slices canvas { width: 100%; height: auto; image-rendering: pixelated; background: #000; border-radius: 12px; }
 .freehand-slices figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
 .trajectory-svg { width: 100%; height: 160px; background: #07110e; border-radius: 12px; margin-top: 12px; }
+.bench-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.bench-table th, .bench-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.bench-table th { color: var(--muted); font-weight: 500; }
 .link-button { display: inline-block; text-decoration: none; margin-top: 8px; }
 .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .stage, .side, .review { padding: 16px; }

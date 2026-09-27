@@ -69,6 +69,7 @@ export function Freehand3DScreen() {
         </div>
         <div className="top-tools">
           <LanguageSwitch />
+          <Link href="/freehand/benchmark">Stage 3A</Link>
           <Link href="/">{ru ? 'Назад' : 'Back'}</Link>
         </div>
       </header>
