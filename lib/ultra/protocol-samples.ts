@@ -1,4 +1,4 @@
-import { LOCALIZATIONS } from '@/lib/ultra/organs'
+import { LOCALIZATIONS, organNames } from '@/lib/ultra/organs'
 
 export type ReportLanguage = 'ru' | 'en'
 
@@ -112,14 +112,14 @@ const REFERENCES: Record<string, Record<ReportLanguage, string>> = {
 
 export function protocolReference(regionName: string | undefined, language: ReportLanguage): string {
   const name = regionName?.trim().toLowerCase()
-  const match = LOCALIZATIONS.find((item) => item.ru.toLowerCase() === name || item.en.toLowerCase() === name)
+  const match = LOCALIZATIONS.find((item) => organNames(item).some((label) => label.toLowerCase() === name))
   if (!match) return NO_REFERENCE[language]
   return REFERENCES[match.id]?.[language] ?? NO_REFERENCE[language]
 }
 
 export function protocolOutline(regionName: string | undefined, language: ReportLanguage): string {
   const name = regionName?.trim().toLowerCase()
-  const match = LOCALIZATIONS.find((item) => item.ru.toLowerCase() === name || item.en.toLowerCase() === name)
+  const match = LOCALIZATIONS.find((item) => organNames(item).some((label) => label.toLowerCase() === name))
   return match ? SAMPLES[match.id][language] : GENERIC[language]
 }
 

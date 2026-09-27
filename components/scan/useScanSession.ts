@@ -21,7 +21,8 @@ import { rasterToGray } from '@/lib/quality/gray'
 import { SessionQualityLog } from '@/lib/training-log/session-log'
 import { TrainingFrameLog } from '@/lib/training-log/frame-log'
 import { useLocale } from '@/components/LocaleProvider'
-import { LOCALES, moduleCopy } from '@/lib/i18n/copy'
+import { cabinetLocale, LOCALES, moduleCopy } from '@/lib/i18n/copy'
+import { speechTag } from '@/lib/i18n/locales'
 import { chooseSeries } from '@/lib/ultra/choose-series'
 import { jpegToRaster, rasterToJpeg } from '@/lib/ultra/frame-jpeg'
 import { PASS_INTERVAL_MS, trimPass } from '@/lib/ultra/pass-loop'
@@ -164,7 +165,7 @@ export function useScanSession() {
 
   useEffect(() => {
     if (!module) return
-    const pack = moduleCopy[locale][module.id]
+    const pack = moduleCopy[cabinetLocale(locale)][module.id]
     if (!pack) return
     const questions = [module.defaultQuestion, ...LOCALES.map((code) => moduleCopy[code][module.id]?.question ?? '')]
     const titles = [module.title, ...LOCALES.map((code) => moduleCopy[code][module.id]?.title ?? '')]
@@ -468,7 +469,7 @@ export function useScanSession() {
       return
     }
     const rec = new Ctor()
-    rec.lang = locale === 'ru' ? 'ru-RU' : 'en-US'
+    rec.lang = speechTag(locale)
     rec.continuous = true
     rec.onresult = (event) => {
       const last = event.results[event.results.length - 1]?.[0]?.transcript

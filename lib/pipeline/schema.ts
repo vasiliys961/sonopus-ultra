@@ -89,7 +89,7 @@ export const diagnoseBodySchema = z.object({
   diameterSeriesPx: z.array(z.number().positive()).max(80).optional(),
   sourceType: z.enum(['uvc', 'hdmi', 'dicom', 'screen-capture', 'synthetic']),
   operatorNote: z.string().max(12000).optional(),
-  reportLanguage: z.enum(['ru', 'en']).optional(),
+  reportLanguage: z.enum(['en', 'ru', 'es', 'fr', 'ar', 'hi', 'pt-BR', 'id', 'ms', 'tr', 'zh-CN']).optional(),
   previousResult: z.any().optional(),
 })
 

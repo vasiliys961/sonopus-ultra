@@ -40,7 +40,7 @@ export interface DiagnoseCommand {
   diameterSeriesPx?: number[]
   sourceType: SourceType
   operatorNote?: string
-  reportLanguage?: 'ru' | 'en'
+  reportLanguage?: 'en' | 'ru' | 'es' | 'fr' | 'ar' | 'hi' | 'pt-BR' | 'id' | 'ms' | 'tr' | 'zh-CN'
   previousResult?: DiagnosticResult | null
 }
 
@@ -145,8 +145,8 @@ export async function runDiagnosticPipeline(
       measurement: findings,
       operatorNote: command.operatorNote,
       reportLanguage: command.reportLanguage ?? 'ru',
-      protocolOutline: protocolOutline(command.bodyRegion?.name, command.reportLanguage ?? 'ru'),
-      protocolReference: protocolReference(command.bodyRegion?.name, command.reportLanguage ?? 'ru'),
+      protocolOutline: protocolOutline(command.bodyRegion?.name, command.reportLanguage === 'ru' ? 'ru' : 'en'),
+      protocolReference: protocolReference(command.bodyRegion?.name, command.reportLanguage === 'ru' ? 'ru' : 'en'),
       images,
     })
   } catch (error) {

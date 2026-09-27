@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { copy, formatMessage, label, translateEngineText, viewTitle, type Locale, type MessageKey } from '@/lib/i18n/copy'
+import { cabinetLocale, copy, formatMessage, label, translateEngineText, viewTitle, type Locale, type MessageKey } from '@/lib/i18n/copy'
+import { APP_LOCALES, isLocale, isRtl, LOCALE_LABEL, matchNavigator } from '@/lib/i18n/locales'
 
 interface LocaleValue {
   locale: Locale
@@ -20,15 +21,12 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (saved === 'en' || saved === 'ru') {
-      setLocaleState(saved)
-      return
-    }
-    if (window.navigator.language.toLowerCase().startsWith('ru')) setLocaleState('ru')
+    setLocaleState(isLocale(saved) ? saved : matchNavigator(window.navigator.language))
   }, [])
 
   useEffect(() => {
     document.documentElement.lang = locale
+    document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
   }, [locale])
 
   const value = useMemo<LocaleValue>(() => {
@@ -36,10 +34,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       window.localStorage.setItem(STORAGE_KEY, next)
       setLocaleState(next)
     }
+    const shown = cabinetLocale(locale)
     return {
       locale,
       setLocale,
-      t: (key, vars) => formatMessage(copy[locale][key], vars),
+      t: (key, vars) => formatMessage(copy[shown][key], vars),
       text: (message) => translateEngineText(locale, message),
       label: (key) => label(locale, key),
       viewTitle: (moduleId, view) => viewTitle(locale, moduleId, view),
@@ -63,13 +62,14 @@ export function ScanFallback() {
 export function LanguageSwitch() {
   const { locale, setLocale } = useLocale()
   return (
-    <div className="lang" role="group" aria-label="Language">
-      <button type="button" className={locale === 'en' ? 'primary' : 'ghost'} onClick={() => setLocale('en')}>
-        EN
-      </button>
-      <button type="button" className={locale === 'ru' ? 'primary' : 'ghost'} onClick={() => setLocale('ru')}>
-        RU
-      </button>
+    <div className="lang">
+      <label>
+        <select aria-label={LOCALE_LABEL[locale]} value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+          {APP_LOCALES.map((code) => (
+            <option key={code} value={code}>{LOCALE_LABEL[code]}</option>
+          ))}
+        </select>
+      </label>
     </div>
   )
 }

@@ -1,6 +1,14 @@
-export type Locale = 'en' | 'ru'
+import { type Locale } from '@/lib/i18n/locales'
 
-export const LOCALES: Locale[] = ['en', 'ru']
+export type { Locale }
+
+export type CabinetLocale = 'en' | 'ru'
+
+export const LOCALES: CabinetLocale[] = ['en', 'ru']
+
+export function cabinetLocale(locale: Locale): CabinetLocale {
+  return locale === 'ru' ? 'ru' : 'en'
+}
 
 const en = {
   homeTitle: 'Ultrasound review room',
@@ -328,7 +336,7 @@ const ru = {
 
 export type MessageKey = keyof typeof en
 
-export const copy: Record<Locale, Record<MessageKey, string>> = { en, ru }
+export const copy: Record<CabinetLocale, Record<MessageKey, string>> = { en, ru }
 
 export function formatMessage(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template
@@ -338,7 +346,7 @@ export function formatMessage(template: string, vars?: Record<string, string | n
 type Guide = { title: string; text: string }
 type ModuleText = { title: string; question: string; atlas: string; views: Record<string, Guide> }
 
-export const moduleCopy: Record<Locale, Record<string, ModuleText>> = {
+export const moduleCopy: Record<CabinetLocale, Record<string, ModuleText>> = {
   en: {
     bladder: {
       title: 'Urinary bladder',
@@ -575,11 +583,11 @@ const labels = {
 } as const
 
 export function label(locale: Locale, key: keyof (typeof labels)['en']): string {
-  return labels[locale][key]
+  return labels[cabinetLocale(locale)][key]
 }
 
 export function viewTitle(locale: Locale, moduleId: string, view: string): string {
-  return moduleCopy[locale][moduleId]?.views[view]?.title ?? view
+  return moduleCopy[cabinetLocale(locale)][moduleId]?.views[view]?.title ?? view
 }
 
 const exactEnglish: Record<string, string> = {

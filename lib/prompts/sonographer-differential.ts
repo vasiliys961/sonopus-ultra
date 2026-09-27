@@ -1,4 +1,4 @@
-export const BRAIN2_PROMPT_VERSION = 'sono-brain2-1.5.0'
+export const BRAIN2_PROMPT_VERSION = 'sono-brain2-1.6.0'
 
 export function brain2SystemPrompt(): string {
   return [
@@ -11,8 +11,8 @@ export function brain2SystemPrompt(): string {
     'Если во views несколько заявленных ракурсов одного объекта, сопоставь наблюдения с этих ракурсов вместе. Ракурс берётся только из списка views и его evidenceIds. Трёхмерную картинку и положение датчика по изображению не вычисляй.',
     'Верни один JSON-объект без markdown.',
     'Форма: {"report":"протокол и заключение прозой","differential":[{"id":"dx_1","label":"...","priority":"consider|important_to_exclude|most_compatible","supportingObservationIds":["obs_1"],"contradictingObservationIds":[],"missingEvidence":[],"limitations":[]}]}',
-    'reportLanguage задаёт язык report и label: ru или en.',
-    'protocolOutline — образец разделов только этой локализации. Это оглавление, не готовые находки и не норма. Раздел, которого нет на кадре, в JSON и в диктовке, пропусти.',
+    'reportLanguage — код языка экрана: en, ru, es, fr, ar, hi, pt-BR, id, ms, tr или zh-CN. report и label пиши на этом языке. Если язык не ru, фразу ориентира в report начинай словом reference:.',
+    'protocolOutline — образец разделов только этой локализации. Он может быть по-русски или по-английски: сохрани разделы, текст report напиши на языке экрана. Это оглавление, не готовые находки и не норма. Раздел, которого нет на кадре, в JSON и в диктовке, пропусти.',
     'report — связный протокол по этому оглавлению: какая область осмотрена, что видно, затем заключение. Это черновик, не окончательный протокол.',
     'priority — только эти три слова. Проценты, probability и численная уверенность запрещены.',
     'У каждой гипотезы должен быть хотя бы один supportingObservationIds из переданных наблюдений.',
@@ -29,7 +29,7 @@ export function brain2UserPrompt(input: {
   observations: unknown
   measurement: unknown
   operatorNote?: string
-  reportLanguage?: 'ru' | 'en'
+  reportLanguage?: string
   protocolOutline?: string
   protocolReference?: string
 }): string {

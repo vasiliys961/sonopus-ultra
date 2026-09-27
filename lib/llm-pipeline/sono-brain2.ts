@@ -10,7 +10,7 @@ export interface Brain2Request {
   observations: unknown
   measurement: unknown
   operatorNote?: string
-  reportLanguage?: 'ru' | 'en'
+  reportLanguage?: string
   protocolOutline?: string
   protocolReference?: string
   images?: LlmImage[]

@@ -1,4 +1,5 @@
-type Locale = 'en' | 'ru'
+import type { Locale } from '@/lib/i18n/locales'
+import { GUIDE_CHROME } from '@/lib/ultra/guide-chrome'
 
 const TEXT = {
   ru: {
@@ -89,8 +90,33 @@ const TEXT = {
   },
 } as const
 
+function guideCopy(locale: Locale) {
+  if (locale === 'ru' || locale === 'en') return TEXT[locale]
+  const chrome = GUIDE_CHROME[locale]
+  return {
+    ...TEXT.en,
+    close: chrome.close,
+    title: chrome.title,
+    lead: chrome.lead,
+    price: chrome.price,
+    looks: chrome.looks,
+    cardsTitle: chrome.cardsTitle,
+    machinesTitle: chrome.machinesTitle,
+    note: chrome.note,
+    columns: chrome.columns,
+    cards: TEXT.en.cards.map((card, index) => ({
+      ...card,
+      name: chrome.cardName[index] ?? card.name,
+      use: chrome.cardUse[index] ?? card.use,
+      examples: chrome.cardExamples[index] ?? card.examples,
+      price: chrome.cardPrice[index] ?? card.price,
+    })),
+    rows: TEXT.en.rows.map((row, index) => [row[0], chrome.panel[index] ?? row[1], chrome.between[index] ?? row[2]] as const),
+  }
+}
+
 export function CaptureGuide({ locale, onClose }: { locale: Locale; onClose: () => void }) {
-  const copy = TEXT[locale]
+  const copy = guideCopy(locale)
   return (
     <div className="ultra-sheet" role="dialog" aria-modal="true" aria-labelledby="capture-guide-title" onClick={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <div className="ultra-sheet-card">

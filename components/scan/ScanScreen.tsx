@@ -6,7 +6,7 @@ import { DiagnosticReview } from '@/components/scan/DiagnosticReview'
 import { MeasurementFields } from '@/components/scan/MeasurementFields'
 import { Sensorless3dPanel } from '@/components/scan/Sensorless3dPanel'
 import { useScanSession } from '@/components/scan/useScanSession'
-import { moduleCopy, type MessageKey } from '@/lib/i18n/copy'
+import { cabinetLocale, moduleCopy, type MessageKey } from '@/lib/i18n/copy'
 import { ATLAS_LINKS } from '@/lib/references/atlas'
 
 const TRACKING_KEY: Record<string, MessageKey> = {
@@ -63,7 +63,7 @@ export function ScanScreen() {
   const { locale, t, text, viewTitle } = useLocale()
   const module = session.module
   if (!module) return <p className="pad">{t('modulesMissing')}</p>
-  const pack = moduleCopy[locale][module.id]
+  const pack = moduleCopy[cabinetLocale(locale)][module.id]
   const atlas = ATLAS_LINKS[module.id]
   const step = session.currentView ? pack?.views[session.currentView] : undefined
   const previewUnit = session.preview?.unit === 'ml'
@@ -97,7 +97,7 @@ export function ScanScreen() {
               {t('module')}
               <select value={session.moduleId} onChange={(event) => session.setModuleId(event.target.value)}>
                 {session.modules.map((item) => (
-                  <option key={item.id} value={item.id}>{moduleCopy[locale][item.id]?.title ?? item.title}</option>
+                  <option key={item.id} value={item.id}>{moduleCopy[cabinetLocale(locale)][item.id]?.title ?? item.title}</option>
                 ))}
               </select>
             </label>
