@@ -1,6 +1,5 @@
-import { invertMat4 } from '@/lib/sono-3d/inverse'
-import { multiplyMat4, translationOf } from '@/lib/spatial-reconstruction/rigid'
 import type { Mat4 } from '@/lib/spatial-reconstruction/types'
+import { relativePose } from '@/lib/volume-engine/core/TransformValidation'
 import { DEFAULT_FREEHAND_CONFIG, type Freehand3DConfig } from '@/lib/volume-engine/config/Freehand3DConfig'
 import type { VolumeErrorCode } from '@/lib/volume-engine/errors'
 import { VolumeEngineError } from '@/lib/volume-engine/errors'
@@ -106,12 +105,8 @@ function failed(
 }
 
 function relativeStep(previous: Mat4, current: Mat4): { translationMm: [number, number, number]; rotationRad: [number, number, number]; confidence: number } {
-  const delta = multiplyMat4(invertMat4(previous), current)
-  return {
-    translationMm: translationOf(delta),
-    rotationRad: [0, 0, 0],
-    confidence: 1,
-  }
+  const relative = relativePose(previous, current)
+  return { ...relative, confidence: 1 }
 }
 
 export async function reconstructFreehand(
