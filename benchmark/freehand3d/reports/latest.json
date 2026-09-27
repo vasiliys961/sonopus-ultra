@@ -1,0 +1,70 @@
+{
+  "frames": 100,
+  "poseProvider": "registration",
+  "translationMaeMm": 0,
+  "rotationMaeDeg": null,
+  "coverage": 1,
+  "rejectedFrames": 0,
+  "reconstructionTimeMs": 74,
+  "memoryBytes": 234,
+  "outOfPlane": "not-estimated",
+  "clinicallyValidated": false,
+  "timings": [
+    {
+      "frames": 20,
+      "width": 320,
+      "height": 240,
+      "stride": 2,
+      "ms": 14,
+      "voxels": 9
+    },
+    {
+      "frames": 50,
+      "width": 320,
+      "height": 240,
+      "stride": 2,
+      "ms": 25,
+      "voxels": 9
+    },
+    {
+      "frames": 100,
+      "width": 320,
+      "height": 240,
+      "stride": 2,
+      "ms": 16,
+      "voxels": 9
+    },
+    {
+      "frames": 20,
+      "width": 480,
+      "height": 360,
+      "stride": 4,
+      "ms": 1,
+      "voxels": 9
+    },
+    {
+      "frames": 20,
+      "width": 640,
+      "height": 480,
+      "stride": 4,
+      "ms": 2,
+      "voxels": 9
+    },
+    {
+      "frames": 100,
+      "width": 480,
+      "height": 360,
+      "stride": 4,
+      "ms": 74,
+      "voxels": 9
+    },
+    {
+      "frames": 200,
+      "width": 320,
+      "height": 240,
+      "stride": 2,
+      "ms": 43,
+      "voxels": 9
+    }
+  ]
+}
