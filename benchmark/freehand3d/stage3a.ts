@@ -24,9 +24,9 @@ import {
 import { cylinderPhantom, curvedTubePhantom, parallelCylindersPhantom, spherePhantom } from '@/benchmark/freehand3d/phantoms/shapes'
 import {
   SyntheticSweepGenerator,
+  trimBlankEdges,
   withPoseBias,
   withoutTransform,
-  type SweepFrame,
   type SweepKind,
 } from '@/benchmark/freehand3d/phantoms/sweep'
 import type { Phantom } from '@/benchmark/freehand3d/phantoms/types'
@@ -132,26 +132,6 @@ interface Evaluation {
 }
 
 const generator = new SyntheticSweepGenerator()
-
-function litCount(frame: SweepFrame): number {
-  const mask = frame.fieldMask
-  if (!mask) return 0
-  let count = 0
-  for (let index = 0; index < mask.length; index += 1) if (mask[index] === 1) count += 1
-  return count
-}
-
-function trimBlankEdges(frames: readonly SweepFrame[]): SweepFrame[] {
-  let peak = 0
-  for (const frame of frames) peak = Math.max(peak, litCount(frame))
-  if (peak === 0) return []
-  const minimum = Math.max(8, peak * 0.25)
-  let start = 0
-  let end = frames.length
-  while (start < end && litCount(frames[start]!) < minimum) start += 1
-  while (end > start && litCount(frames[end - 1]!) < minimum) end -= 1
-  return frames.slice(start, end)
-}
 
 function injectedPose(translationMm: Vec3, rotationRad: Vec3): PoseErrorReport {
   const rotationDeg = Math.hypot(rotationRad[0], rotationRad[1], rotationRad[2]) * (180 / Math.PI)

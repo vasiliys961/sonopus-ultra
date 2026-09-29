@@ -16,6 +16,7 @@ export function spherePhantom(center: Vec3 = [0, 0, 0], radiusMm = 6): Phantom {
     volumeMm3: (4 / 3) * Math.PI * radiusMm ** 3,
     dimensionsMm: [diameter, diameter, diameter],
     diameterMm: diameter,
+    measurements: [0, 1, 2].map((axis) => ({ name: 'diameter' as const, expectedMm: diameter, axis: axis as 0 | 1 | 2 })),
   }
   return {
     id: 'sphere',
@@ -36,6 +37,10 @@ export function cylinderPhantom(center: Vec3 = [0, 0, 0], radiusMm = 4, lengthMm
     dimensionsMm: [radiusMm * 2, radiusMm * 2, lengthMm],
     diameterMm: radiusMm * 2,
     lengthMm,
+    measurements: [
+      { name: 'diameter', expectedMm: radiusMm * 2, axis: 0 },
+      { name: 'length', expectedMm: lengthMm, axis: 2 },
+    ],
   }
   return {
     id: 'cylinder',
@@ -62,6 +67,11 @@ export function parallelCylindersPhantom(): Phantom {
     diameterMm: radiusMm * 2,
     lengthMm,
     distanceBetweenStructuresMm: gap,
+    measurements: [
+      { name: 'diameter', expectedMm: radiusMm * 2, axis: 1 },
+      { name: 'length', expectedMm: lengthMm, axis: 2 },
+      { name: 'separation', expectedMm: gap, axis: 'components' },
+    ],
   }
   return {
     id: 'parallel-cylinders',
@@ -109,7 +119,16 @@ export function curvedTubePhantom(): Phantom {
       dimensionsMm: [maxX - minX, maxY - minY, maxZ - minZ],
       diameterMm: tubeRadius * 2,
       lengthMm: arcLength,
+      measurements: [
+        { name: 'length', expectedMm: arcLength, axis: 'arc' },
+        { name: 'centerline', expectedMm: 0, axis: 'arc' },
+      ],
     },
-    contains: (point) => samples.some((sample) => hypot(point, sample) <= tubeRadius),
+    centerline: samples,
+    contains: (point) => {
+      const angle = Math.min(Math.PI / 2, Math.max(0, Math.atan2(point[2], point[0])))
+      const closest: Vec3 = [bendRadius * Math.cos(angle), 0, bendRadius * Math.sin(angle)]
+      return hypot(point, closest) <= tubeRadius
+    },
   }
 }

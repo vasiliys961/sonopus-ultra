@@ -1,23 +1,9 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
-import path from 'node:path'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { dropFrames } from '@/benchmark/freehand3d/phantoms/degrade'
 import { measurePose } from '@/benchmark/freehand3d/phantoms/metrics'
 import { cylinderPhantom, curvedTubePhantom, parallelCylindersPhantom, spherePhantom } from '@/benchmark/freehand3d/phantoms/shapes'
 import { SyntheticSweepGenerator, withPoseBias } from '@/benchmark/freehand3d/phantoms/sweep'
 import { runStage3A, type Stage3AReport } from '@/benchmark/freehand3d/stage3a'
-import { stage3aMarkdown } from '@/benchmark/freehand3d/stage3a-format'
-
-const reports = '/Users/maxmobiles.ru/Desktop/ultrasound-ultra/benchmark/freehand3d/reports'
-
-function roundValue(value: unknown): unknown {
-  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value * 10000) / 10000 : value
-  if (Array.isArray(value)) return value.map(roundValue)
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, roundValue(item)]))
-  }
-  return value
-}
 
 describe('stage 3A phantoms', () => {
   it('хранит известную геометрию сферы, цилиндров и трубки', () => {
@@ -72,9 +58,6 @@ describe('stage 3A report', () => {
 
   beforeAll(async () => {
     report = await runStage3A()
-    mkdirSync(reports, { recursive: true })
-    writeFileSync(path.join(reports, 'stage3a.json'), `${JSON.stringify(roundValue(report), null, 2)}\n`)
-    writeFileSync(path.join(reports, 'stage3a.md'), stage3aMarkdown(report))
   }, 180000)
 
   it('сравнивает точную позу и регистрацию на одной сфере', () => {

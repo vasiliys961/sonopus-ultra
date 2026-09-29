@@ -52,6 +52,13 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .bench-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
 .bench-table th, .bench-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
 .bench-table th { color: var(--muted); font-weight: 500; }
+.bench-table caption { caption-side: bottom; color: var(--muted); font-size: 13px; text-align: left; padding-top: 6px; }
+.bench-legend { display: flex; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 12px 0 0; }
+.bench-legend li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+.swatch.match { background: #3ecfb0; }
+.swatch.fn { background: #e6b35a; }
+.swatch.fp { background: #ff5d5d; }
 .link-button { display: inline-block; text-decoration: none; margin-top: 8px; }
 .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .stage, .side, .review { padding: 16px; }

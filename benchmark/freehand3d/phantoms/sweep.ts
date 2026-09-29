@@ -89,6 +89,25 @@ export function withPoseBias(frames: readonly SweepFrame[], translationMm: Vec3,
   })
 }
 
+export function trimBlankEdges(frames: readonly SweepFrame[]): SweepFrame[] {
+  const litCount = (frame: SweepFrame) => {
+    const mask = frame.fieldMask
+    if (!mask) return 0
+    let count = 0
+    for (let index = 0; index < mask.length; index += 1) if (mask[index] === 1) count += 1
+    return count
+  }
+  let peak = 0
+  for (const frame of frames) peak = Math.max(peak, litCount(frame))
+  if (peak === 0) return []
+  const minimum = Math.max(8, peak * 0.25)
+  let start = 0
+  let end = frames.length
+  while (start < end && litCount(frames[start]!) < minimum) start += 1
+  while (end > start && litCount(frames[end - 1]!) < minimum) end -= 1
+  return frames.slice(start, end)
+}
+
 export function withoutTransform(frames: readonly SweepFrame[]): FreehandFrame[] {
   return frames.map((frame) => ({
     frameId: frame.frameId,
