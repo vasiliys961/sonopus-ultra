@@ -6,6 +6,8 @@ export interface SyntheticScene {
   gain: number
   motionShift: number
   phase: number
+  /** 0..1, учебный сдвиг тёмного овала вдоль сектора. Без поля картинка прежняя. */
+  sweep?: number
 }
 
 function boxBlur(gray: Float32Array, width: number, height: number): Float32Array {
@@ -37,6 +39,7 @@ export function renderSyntheticRaster(
   const gain = scene.gain ?? 1
   const shift = scene.motionShift ?? 0
   const phase = scene.phase ?? 0
+  const sweep = Math.max(0, Math.min(1, scene.sweep ?? 0))
   let gray: Float32Array = new Float32Array(width * height)
   const cx = width / 2 + shift
   const cy = height * 0.12
@@ -48,11 +51,13 @@ export function renderSyntheticRaster(
       if (y < cy || Math.hypot(dx, dy) > radius) continue
       const speckle = ((x * 17 + y * 13 + Math.floor(phase * 20)) % 11) / 11
       const ex = (x - width / 2) / (width * 0.16)
-      const ey = (y - height * 0.58) / (height * 0.14)
+      const ey = (y - height * (0.28 + sweep * 0.5)) / (height * (0.1 + sweep * 0.1))
       const ellipse = ex * ex + ey * ey
+      const band = sweep > 0 && Math.abs(y / height - (0.32 + sweep * 0.4)) < 0.045 + sweep * 0.07
       let value = 0.28 + speckle * 0.2
       if ((x + y) % 2 === 0) value += 0.45
-      if (ellipse < 1) value = 0.05
+      if (band) value = 0.06
+      else if (ellipse < 1) value = 0.05
       else if (ellipse < 1.35) value = 0.95
       gray[y * width + x] = Math.max(0, Math.min(1, value * gain))
     }

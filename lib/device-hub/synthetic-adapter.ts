@@ -21,7 +21,11 @@ export function createSyntheticAdapter(deps: {
         if (current !== token) return
         const scene = deps.getScene()
         const frame: UltrasoundFrame = {
-          imageData: renderSyntheticRaster({ ...scene, phase: sequence / 10 }),
+          imageData: renderSyntheticRaster({
+            ...scene,
+            phase: sequence / 10,
+            sweep: scene.sweep ?? (sequence % 4) / 3,
+          }),
           timestamp: deps.now ? deps.now() : Date.now(),
           sequenceNumber: sequence,
         }

@@ -13,6 +13,7 @@ import { connectHint, doctorCopy } from '@/lib/ultra/screen-copy'
 import { speechTag } from '@/lib/i18n/locales'
 import { useScanSession } from '@/components/scan/useScanSession'
 import { CaptureGuide } from '@/components/ultra/CaptureGuide'
+import { SpatialPicture } from '@/components/intelligence/SpatialPicture'
 
 type Step = 'connect' | 'area' | 'sweep' | 'result'
 type ProgramPlace = 'machine' | 'computer' | 'pocket' | 'practice'
@@ -605,6 +606,7 @@ export function UltraScreen() {
               />
             </label>
           ) : null}
+          <SpatialPicture frames={session.passFrames} organId={organId || 'liver'} />
           <h2>{copy.series}</h2>
           {series.length === 0 ? <p>{session.diagnosing ? copy.writing : copy.empty}</p> : (
             <div className="ultra-strip">

@@ -46,8 +46,28 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .freehand { margin-bottom: 16px; padding: 16px; }
 .freehand-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .freehand-slices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-.freehand-slices canvas { width: 100%; height: auto; image-rendering: pixelated; background: #000; border-radius: 12px; }
+.freehand-slices canvas { width: 100%; height: auto; image-rendering: pixelated; background: #000; border-radius: 12px; cursor: crosshair; }
 .freehand-slices figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.spatial-picture { margin-top: 18px; }
+.spatial-volume canvas { width: min(100%, 720px); height: auto; image-rendering: pixelated; background: #000; border-radius: 12px; }
+.spatial-volume figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.vtk-host { position: relative; overflow: hidden; width: min(100%, 720px); height: 380px; background: #000; border-radius: 12px; }
+.file-pick { display: inline-flex; align-items: center; }
+.file-pick input { margin-left: 8px; }
+.study-readout { margin-top: 16px; }
+.study-readout h3 { margin-top: 14px; }
+.cine-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.cine-strip button { margin: 0; min-width: 96px; background: transparent; border: 0; padding: 0; text-align: left; }
+.cine-strip canvas { width: 96px; height: auto; image-rendering: pixelated; background: #000; border-radius: 8px; }
+.cine-strip button span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+.cine-now canvas { width: min(100%, 480px); height: auto; image-rendering: pixelated; background: #000; border-radius: 12px; }
+.cine-now figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.cine-strip .marked canvas { outline: 2px solid var(--warn); }
+.cine-strip .current canvas { outline: 2px solid var(--text); }
+.cine-strip .important canvas { outline: 2px solid var(--accent); }
+.candidate-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+.candidate-card.focus { border-color: var(--accent); }
+.candidate-card p { margin: 6px 0; }
 .trajectory-svg { width: 100%; height: 160px; background: #07110e; border-radius: 12px; margin-top: 12px; }
 .bench-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
 .bench-table th, .bench-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); font-size: 14px; }

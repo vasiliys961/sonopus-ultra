@@ -38,7 +38,7 @@ export function orthogonalSlice(volume: ReconstructedVolume, axis: SliceAxis, in
   for (let row = 0; row < height; row += 1) {
     for (let col = 0; col < width; col += 1) {
       const x = axis === 'x' ? index : col
-      const y = axis === 'x' ? col : axis === 'y' ? index : col
+      const y = axis === 'y' ? index : axis === 'z' ? row : col
       const z = axis === 'z' ? index : row
       if (x < 0 || y < 0 || z < 0 || x >= sx || y >= sy || z >= sz) continue
       const tone = toneOf(volume, voxelIndex(volume.size, x, y, z), view)
@@ -51,6 +51,25 @@ export function orthogonalSlice(volume: ReconstructedVolume, axis: SliceAxis, in
     }
   }
   return { axis, index, width, height, rgba }
+}
+
+/** Точка объёма на плоскости среза. Ось самой плоскости в кадр не входит. */
+export function pointOnPlane(axis: SliceAxis, point: { x: number; y: number; z: number }): { col: number; row: number } {
+  if (axis === 'z') return { col: point.x, row: point.y }
+  if (axis === 'y') return { col: point.x, row: point.z }
+  return { col: point.y, row: point.z }
+}
+
+/** Щелчок двигает две свободные оси. Срез, по которому щёлкнули, остаётся на месте. */
+export function crosshairFromClick(
+  axis: SliceAxis,
+  col: number,
+  row: number,
+  current: { x: number; y: number; z: number },
+): { x: number; y: number; z: number } {
+  if (axis === 'z') return { x: col, y: row, z: current.z }
+  if (axis === 'y') return { x: col, y: current.y, z: row }
+  return { x: current.x, y: col, z: row }
 }
 
 export function middleObservedIndex(volume: ReconstructedVolume, axis: SliceAxis): number {
